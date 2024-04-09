@@ -20,8 +20,11 @@ import Openai from 'openai';
 import { createFile } from './createFile';
 import { createModel } from './createModel';
 import { stream, streamText, streamSSE } from 'hono/streaming';
+import { logger } from 'hono/logger'
 
 const app = new Hono();
+
+app.use(logger());
 
 app.get('/sse', async (c: Context) => {
 	const content = c.req.query('question');
@@ -45,10 +48,12 @@ app.get('/sse', async (c: Context) => {
 			'body': JSON.stringify(data)
 		});
 		if (response.body) {
+
 			const body = response.body;
 			return stream(c, async stream => {
-				console.log('stream', stream);
 				for await (const chunk of body) {
+					const decoder = new TextDecoder('utf-8');
+					const decoderString = decoder.decode(chunk);
 					stream.write(`data: ${JSON.stringify(chunk)}\n\n`);
 				}
 			});
