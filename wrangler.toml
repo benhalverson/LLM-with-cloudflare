@@ -1,6 +1,6 @@
 name = "rag-llm"
 main = "src/index.ts"
-compatibility_date = "2024-04-05"
+compatibility_date = "2024-04-04"
 compatibility_flags = ["nodejs_compat"]
 
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)

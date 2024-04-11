@@ -32,7 +32,7 @@ app.get('/sse', async (c: Context) => {
 	c.header('Cache-Control', 'no-cache');
 	c.header('Connection', 'keep-alive');
 	const data = {
-		"model": "command-r",
+		"model": "dolphin-mixtral",
 		"messages": [
 			{
 				"role": "user",
@@ -50,70 +50,21 @@ app.get('/sse', async (c: Context) => {
 		if (response.body) {
 
 			const body = response.body;
-			return stream(c, async stream => {
+			return stream(c, async (stream) => {
 				for await (const chunk of body) {
 					const decoder = new TextDecoder('utf-8');
-					const decoderString = decoder.decode(chunk);
-					stream.write(`data: ${JSON.stringify(chunk)}\n\n`);
+					const decoderString = decoder.decode(chunk, { stream: true });
+					stream.write(`${decoderString}\n\n`);
+					debugger;
 				}
+				stream.close();
 			});
 
 		}
 	} catch (error) {
 		console.log('error', error);
 	}
-
-	return c.text('Failed to get response from model', 500);
-
-	// ```js
-	// const response = await fetch(url);
-	// if (response.body) {
-	//   return c.stream(async stream =>
-	//     for await (const chunk of response.body) {
-	//       c.write(`data: ${JSON.stringify(chunk)}\n\n`);
-	//     }
-	//   }
-	// }
-	// ```
-
-	// app.get('/stream', (c) => {
-	//   return stream(c, async (stream) => {
-	//     // Write a process to be executed when aborted.
-	//     stream.onAbort(() => {
-	//       console.log('Aborted!')
-	//     })
-	//     // Write a Uint8Array.
-	//     await streamSSE.
-	//     // Pipe a readable stream.
-	//     await stream.pipe(anotherReadableStream)
-	//   })
-	// })
-
-
-	// 	return new Response(new ReadableStream({
-	// 		async start(controller) {
-	// 			while (true) {
-	// 				const { done, value } = await reader.read();
-	// 				console.log('value, done', value, done);
-	// 				if (done) {
-	// 					break;
-	// 				}
-	// 				controller.enqueue(value);
-	// 			}
-	// 			controller.close();
-	// 		}
-	// 	}),
-	// 		{
-	// 			headers: {
-	// 				'Content-Type': 'text/event-stream',
-	// 				'Cache-Control': 'no-cache',
-	// 				'Connection': 'keep-alive'
-	// 			}
-	// 		});
-	// } else {
-	// 	return c.text('Failed to get response from model', 500);
-	// }
-
+	// return c.text('Failed to get response from model', 500);
 });
 
 app.post('/files', async (c: Context) => {
