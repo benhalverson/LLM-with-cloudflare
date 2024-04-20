@@ -20,11 +20,17 @@ import Openai from 'openai';
 import { createFile } from './createFile';
 import { createModel } from './createModel';
 import { stream, streamText, streamSSE } from 'hono/streaming';
-import { logger } from 'hono/logger'
+import { logger } from 'hono/logger';
+import { cors } from 'hono/cors';
 
 const app = new Hono();
 
 app.use(logger());
+app.use(cors());
+
+app.get('', (c) => {
+	return c.text("health check");
+});
 
 app.get('/sse', async (c: Context) => {
 	const content = c.req.query('question');
@@ -54,12 +60,20 @@ app.get('/sse', async (c: Context) => {
 				for await (const chunk of body) {
 					const decoder = new TextDecoder('utf-8');
 					const decoderString = decoder.decode(chunk, { stream: true });
-					stream.write(`${decoderString}\n\n`);
-					debugger;
-				}
-				stream.close();
+					// only return the message key in the response
+					// console.log(decoderString);
+					// stream.write(`${decoderString}\n\n`);
+					try {
+						const json = JSON.parse(decoderString);
+						if (json && json.message && json.message.content) {
+							stream.write(`data: ${json.message.content}\n\n`);
+						}
+					} catch (error) {
+						console.log('error', error);
+					}
+				};
+				return stream.close();
 			});
-
 		}
 	} catch (error) {
 		console.log('error', error);
