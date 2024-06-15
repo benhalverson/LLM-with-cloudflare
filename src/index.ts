@@ -38,7 +38,7 @@ app.get('/sse', async (c: Context) => {
 	c.header('Cache-Control', 'no-cache');
 	c.header('Connection', 'keep-alive');
 	const data = {
-		"model": "dolphin-mixtral",
+		"model": "command-r",
 		"messages": [
 			{
 				"role": "user",
